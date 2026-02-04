@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+    --font-family: 'Outfit', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: #090c12;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+    min-height: 100vh;
+}
+
+@layer components {
+    .glass-card {
+        @apply bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl shadow-2xl;
+    }
+
+    .stat-card {
+        @apply bg-slate-900/40 border border-white/5 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:shadow-2xl;
+    }
+}

@@ -4,16 +4,18 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"html/template"
+	"io"
+	"io/fs"
 	"net/http"
+	"strings"
 
 	"github.com/yourdudeken/wg-gateway/internal/config"
 	"github.com/yourdudeken/wg-gateway/internal/service"
 	"github.com/yourdudeken/wg-gateway/internal/wg"
 )
 
-//go:embed templates/* static/*
-var content embed.FS
+//go:embed all:dist
+var frontendContent embed.FS
 
 type Server struct {
 	configPath string
@@ -46,7 +48,7 @@ func (s *Server) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *Server) Start(port int) error {
-	http.HandleFunc("/", s.authMiddleware(s.handleIndex))
+	// API routes
 	http.HandleFunc("/api/status", s.authMiddleware(s.handleStatus))
 	http.HandleFunc("/api/peers", s.authMiddleware(s.handlePeers))
 	http.HandleFunc("/api/peers/add", s.authMiddleware(s.handleAddPeer))
@@ -56,21 +58,28 @@ func (s *Server) Start(port int) error {
 	http.HandleFunc("/api/config", s.authMiddleware(s.handleConfig))
 	http.HandleFunc("/api/config/update", s.authMiddleware(s.handleUpdateConfig))
 
-	http.Handle("/static/", s.authMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		http.FileServer(http.FS(content)).ServeHTTP(w, r)
+	// SPA serving
+	distFS, _ := fs.Sub(frontendContent, "dist")
+	fileServer := http.FileServer(http.FS(distFS))
+
+	http.HandleFunc("/", s.authMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		// Serve file if it exists, otherwise serve index.html for SPA routing
+		f, err := distFS.Open(strings.TrimPrefix(r.URL.Path, "/"))
+		if err == nil {
+			f.Close()
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+		
+		// Serve index.html
+		indexFile, _ := distFS.Open("index.html")
+		defer indexFile.Close()
+		stat, _ := indexFile.Stat()
+		http.ServeContent(w, r, "index.html", stat.ModTime(), indexFile.(io.ReadSeeker))
 	}))
 
 	addr := fmt.Sprintf(":%d", port)
 	return http.ListenAndServe(addr, nil)
-}
-
-func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFS(content, "templates/index.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	tmpl.Execute(w, nil)
 }
 
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {

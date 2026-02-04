@@ -16,6 +16,10 @@ traefik_dynamic/
 # OS files
 .DS_Store
 
+# Frontend
+node_modules/
+dist/
+
 # Go
 vendor/
 *.exe
