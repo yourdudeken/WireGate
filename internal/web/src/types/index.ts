@@ -5,6 +5,8 @@ export interface Status {
     ready: boolean;
     peer_count: number;
     service_count: number;
+    total_rx?: number;
+    total_tx?: number;
 }
 
 export interface Peer {
@@ -12,6 +14,12 @@ export interface Peer {
     wg_ip: string;
     keepalive: number;
     public_key: string;
+    live?: {
+        handshake: number;
+        rx: number;
+        tx: number;
+        online: boolean;
+    };
 }
 
 export interface Service {

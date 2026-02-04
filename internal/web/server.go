@@ -8,13 +8,16 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
+	"github.com/gorilla/websocket"
 	"github.com/yourdudeken/wg-gateway/internal/config"
 	"github.com/yourdudeken/wg-gateway/internal/service"
+	"github.com/yourdudeken/wg-gateway/internal/ssh"
 	"github.com/yourdudeken/wg-gateway/internal/wg"
-	"github.com/gorilla/websocket"
-	"golang.org/x/crypto/ssh"
+	remoteSSH "golang.org/x/crypto/ssh"
+	"time"
 )
 
 //go:embed dist
@@ -23,12 +26,28 @@ var frontendContent embed.FS
 type Server struct {
 	configPath string
 	password   string
+	cache      *StatusCache
+}
+
+type StatusCache struct {
+	LastUpdate time.Time
+	WGData     map[string]PeerLiveStatus
+}
+
+type PeerLiveStatus struct {
+	Handshake  uint64 `json:"handshake"`
+	TransferRx uint64 `json:"rx"`
+	TransferTx uint64 `json:"tx"`
+	Online     bool   `json:"online"`
 }
 
 func NewServer(configPath, password string) *Server {
 	return &Server{
 		configPath: configPath,
 		password:   password,
+		cache: &StatusCache{
+			WGData: make(map[string]PeerLiveStatus),
+		},
 	}
 }
 
@@ -41,6 +60,7 @@ func (s *Server) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		user, pass, ok := r.BasicAuth()
 		if !ok || user != "admin" || pass != s.password {
+			fmt.Printf("Unauthorized access attempt from %s\n", r.RemoteAddr)
 			w.Header().Set("WWW-Authenticate", `Basic realm="W-G Gateway Dashboard"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -74,7 +94,7 @@ func (s *Server) Start(port int) error {
 			fileServer.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Serve index.html
 		indexFile, _ := distFS.Open("index.html")
 		defer indexFile.Close()
@@ -93,13 +113,22 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.updateCacheIfNeeded(cfg)
+	var totalRx, totalTx uint64
+	for _, p := range s.cache.WGData {
+		totalRx += p.TransferRx
+		totalTx += p.TransferTx
+	}
+
 	status := map[string]interface{}{
-		"project":   cfg.Project,
-		"vps_ip":    cfg.VPS.IP,
-		"vps_user":  cfg.VPS.SSHUser,
-		"ready":     cfg.Validate() == nil,
-		"peer_count": len(cfg.Peers),
+		"project":       cfg.Project,
+		"vps_ip":        cfg.VPS.IP,
+		"vps_user":      cfg.VPS.SSHUser,
+		"ready":         cfg.Validate() == nil,
+		"peer_count":    len(cfg.Peers),
 		"service_count": len(cfg.Services),
+		"total_rx":      totalRx,
+		"total_tx":      totalTx,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -113,8 +142,60 @@ func (s *Server) handlePeers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	s.updateCacheIfNeeded(cfg)
+
+	type PeerWithStatus struct {
+		config.PeerConfig
+		Live PeerLiveStatus `json:"live"`
+	}
+
+	peers := make([]PeerWithStatus, len(cfg.Peers))
+	for i, p := range cfg.Peers {
+		peers[i] = PeerWithStatus{
+			PeerConfig: p,
+			Live:       s.cache.WGData[p.PublicKey],
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(cfg.Peers)
+	json.NewEncoder(w).Encode(peers)
+}
+
+func (s *Server) updateCacheIfNeeded(cfg *config.Config) {
+	if time.Since(s.cache.LastUpdate) < 15*time.Second {
+		return
+	}
+
+	if cfg.VPS.IP == "" {
+		return
+	}
+
+	client := ssh.NewClient(cfg.VPS.SSHUser, cfg.VPS.IP, cfg.VPS.SSHKey)
+	out, err := client.Output("sudo wg show all dump")
+	if err != nil {
+		return
+	}
+
+	lines := strings.Split(out, "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 8 {
+			continue
+		}
+		// wg dump format: interface public_key preshared_key endpoint allowed_ips latest_handshake transfer_rx transfer_tx persistent_keepalive
+		pubKey := fields[1]
+		handshakeSec, _ := strconv.ParseInt(fields[5], 10, 64)
+		rx, _ := strconv.ParseUint(fields[6], 10, 64)
+		tx, _ := strconv.ParseUint(fields[7], 10, 64)
+
+		s.cache.WGData[pubKey] = PeerLiveStatus{
+			Handshake:  uint64(handshakeSec),
+			TransferRx: rx,
+			TransferTx: tx,
+			Online:     handshakeSec > 0 && time.Now().Unix()-handshakeSec < 180, // online if handshake in last 3 mins
+		}
+	}
+	s.cache.LastUpdate = time.Now()
 }
 
 func (s *Server) handleAddPeer(w http.ResponseWriter, r *http.Request) {
@@ -346,25 +427,25 @@ func (s *Server) handleSSH(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	// SSH Client Config
-	sshConfig := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	sshConfig := &remoteSSH.ClientConfig{
+		User:            user,
+		Auth:            []remoteSSH.AuthMethod{},
+		HostKeyCallback: remoteSSH.InsecureIgnoreHostKey(),
 	}
 
 	// Try using SSH key
 	if cfg.VPS.SSHKey != "" {
 		key, err := os.ReadFile(cfg.VPS.SSHKey)
 		if err == nil {
-			signer, err := ssh.ParsePrivateKey(key)
+			signer, err := remoteSSH.ParsePrivateKey(key)
 			if err == nil {
-				sshConfig.Auth = append(sshConfig.Auth, ssh.PublicKeys(signer))
+				sshConfig.Auth = append(sshConfig.Auth, remoteSSH.PublicKeys(signer))
 			}
 		}
 	}
 
 	// Connect to Peer via WG IP
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", targetPeer.WGIp), sshConfig)
+	client, err := remoteSSH.Dial("tcp", fmt.Sprintf("%s:22", targetPeer.WGIp), sshConfig)
 	if err != nil {
 		ws.WriteMessage(websocket.TextMessage, []byte("\r\nConnection failed: "+err.Error()+"\r\n"))
 		return
@@ -378,10 +459,10 @@ func (s *Server) handleSSH(w http.ResponseWriter, r *http.Request) {
 	defer session.Close()
 
 	// Request PTY
-	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,
-		ssh.TTY_OP_ISPEED: 14400,
-		ssh.TTY_OP_OSPEED: 14400,
+	modes := remoteSSH.TerminalModes{
+		remoteSSH.ECHO:          1,
+		remoteSSH.TTY_OP_ISPEED: 14400,
+		remoteSSH.TTY_OP_OSPEED: 14400,
 	}
 	if err := session.RequestPty("xterm-256color", 40, 80, modes); err != nil {
 		return

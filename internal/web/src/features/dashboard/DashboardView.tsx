@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, Layers, Activity, ShieldCheck, Globe, ChevronRight, Shield, Settings, BarChart3 } from 'lucide-react';
+import { Users, Layers, Activity, ShieldCheck, Globe, ChevronRight, Shield, Settings, BarChart3, ArrowDown, ArrowUp } from 'lucide-react';
 import { Status, Peer, Service } from '../../types';
 import { StatCard } from '../../components/ui/Cards';
 import { UsageChart } from './UsageChart';
+import { formatBytes } from '../../utils';
 
 interface DashboardViewProps {
     status: Status | null;
@@ -29,50 +30,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
+                    {/* Analytics Overview */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="glass-card p-8 flex items-center gap-6">
+                            <div className="w-14 h-14 bg-blue-600/10 rounded-2xl flex items-center justify-center text-blue-400 shadow-inner">
+                                <ArrowDown size={32} />
+                            </div>
+                            <div>
+                                <h4 className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Global Received</h4>
+                                <div className="text-3xl font-black text-white font-mono tracking-tighter">
+                                    {formatBytes(status?.total_rx || 0)}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="glass-card p-8 flex items-center gap-6">
+                            <div className="w-14 h-14 bg-indigo-600/10 rounded-2xl flex items-center justify-center text-indigo-400 shadow-inner">
+                                <ArrowUp size={32} />
+                            </div>
+                            <div>
+                                <h4 className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Global Transmitted</h4>
+                                <div className="text-3xl font-black text-white font-mono tracking-tighter">
+                                    {formatBytes(status?.total_tx || 0)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Analytics Chart */}
                     <div className="glass-card">
                         <div className="px-8 py-6 border-b border-white/5 flex justify-between items-center">
                             <div className="flex items-center gap-3">
                                 <BarChart3 size={20} className="text-blue-400" />
-                                <h2 className="text-xl font-semibold">Tunnel Throughput (Last 24h)</h2>
+                                <h2 className="text-xl font-semibold">Tunnel Throughput (Live Trend)</h2>
                             </div>
                         </div>
                         <div className="p-8">
                             <UsageChart />
-                        </div>
-                    </div>
-
-                    {/* Traffic Redistribution */}
-                    <div className="glass-card">
-                        <div className="px-8 py-6 border-b border-white/5 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <Globe size={20} className="text-blue-400" />
-                                <h2 className="text-xl font-semibold">Live Traffic Distribution</h2>
-                            </div>
-                        </div>
-                        <div className="p-8">
-                            <div className="space-y-4">
-                                {services.slice(0, 5).map(s => (
-                                    <div key={s.domain} className="flex items-center justify-between p-4 bg-slate-900/30 rounded-2xl border border-white/5 group hover:border-white/10 transition-all">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-400">
-                                                <Activity size={18} />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-white text-sm tracking-tight">{s.domain}</h4>
-                                                <p className="text-xs text-slate-500 font-medium">Mapped to {s.peer_name}:{s.port}</p>
-                                            </div>
-                                        </div>
-                                        <ChevronRight size={16} className="text-slate-600 group-hover:text-blue-400 transition-colors" />
-                                    </div>
-                                ))}
-                                {services.length > 5 && (
-                                    <button onClick={() => setActiveTab('services')} className="w-full py-4 text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors bg-white/5 rounded-xl border border-white/5">
-                                        View all active routes
-                                    </button>
-                                )}
-                                {services.length === 0 && <p className="text-center py-8 text-slate-500 italic">No traffic routing detected.</p>}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -90,14 +83,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             <span className="text-white font-bold">{status?.project}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-slate-400 text-sm font-medium">Core Nodes</span>
-                            <span className="text-emerald-400 font-bold">{peers.length} Healthy</span>
+                            <span className="text-slate-400 text-sm font-medium">Node Health</span>
+                            <span className="text-emerald-400 font-bold">{peers.filter(p => p.live?.online).length} / {peers.length} Online</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-slate-400 text-sm font-medium">Uptime Strategy</span>
-                            <span className="text-blue-400 font-bold">Encapsulated VPN</span>
+                            <span className="text-slate-400 text-sm font-medium">Tunnel Strategy</span>
+                            <span className="text-blue-400 font-bold">Encapsulated</span>
                         </div>
                         <hr className="border-white/5" />
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Services</h4>
+                            <div className="space-y-2">
+                                {services.slice(0, 3).map(s => (
+                                    <div key={s.domain} className="flex items-center justify-between text-sm py-2 px-3 bg-white/5 rounded-xl border border-white/5">
+                                        <span className="text-slate-300 font-medium truncate max-w-[150px]">{s.domain}</span>
+                                        <span className="text-blue-500 font-bold font-mono">{s.port}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                         <button onClick={() => setActiveTab('settings')} className="w-full flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 rounded-2xl text-sm font-bold border border-white/5 transition-all text-slate-300">
                             <Settings size={18} /> Cluster Settings
                         </button>

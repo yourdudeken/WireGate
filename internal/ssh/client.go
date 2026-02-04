@@ -18,7 +18,7 @@ func NewClient(user, host, keyPath string) *Client {
 
 func (c *Client) Run(command string) error {
 	dest := fmt.Sprintf("%s@%s", c.User, c.Host)
-	args := []string{"-o", "BatchMode=yes", "-o", "ConnectTimeout=10"}
+	args := []string{"-o", "BatchMode=yes", "-o", "ConnectTimeout=10", "-o", "StrictHostKeyChecking=no"}
 	if c.KeyPath != "" {
 		args = append(args, "-i", c.KeyPath)
 	}
@@ -28,6 +28,19 @@ func (c *Client) Run(command string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func (c *Client) Output(command string) (string, error) {
+	dest := fmt.Sprintf("%s@%s", c.User, c.Host)
+	args := []string{"-o", "BatchMode=yes", "-o", "ConnectTimeout=5", "-o", "StrictHostKeyChecking=no"}
+	if c.KeyPath != "" {
+		args = append(args, "-i", c.KeyPath)
+	}
+	args = append(args, dest, command)
+
+	cmd := exec.Command("ssh", args...)
+	out, err := cmd.Output()
+	return string(out), err
 }
 
 func (c *Client) Copy(src, dst string) error {
