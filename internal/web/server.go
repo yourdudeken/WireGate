@@ -7,14 +7,17 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/yourdudeken/wg-gateway/internal/config"
 	"github.com/yourdudeken/wg-gateway/internal/service"
 	"github.com/yourdudeken/wg-gateway/internal/wg"
+	"github.com/gorilla/websocket"
+	"golang.org/x/crypto/ssh"
 )
 
-//go:embed all:dist
+//go:embed dist
 var frontendContent embed.FS
 
 type Server struct {
@@ -57,6 +60,7 @@ func (s *Server) Start(port int) error {
 	http.HandleFunc("/api/services/delete", s.authMiddleware(s.handleDeleteService))
 	http.HandleFunc("/api/config", s.authMiddleware(s.handleConfig))
 	http.HandleFunc("/api/config/update", s.authMiddleware(s.handleUpdateConfig))
+	http.HandleFunc("/api/ssh", s.authMiddleware(s.handleSSH))
 
 	// SPA serving
 	distFS, _ := fs.Sub(frontendContent, "dist")
@@ -294,4 +298,127 @@ func (s *Server) handleUpdateConfig(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
+
+func (s *Server) handleSSH(w http.ResponseWriter, r *http.Request) {
+	peerName := r.URL.Query().Get("peer")
+	if peerName == "" {
+		http.Error(w, "peer required", http.StatusBadRequest)
+		return
+	}
+
+	cfg, err := config.LoadConfig(s.configPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var targetPeer *config.PeerConfig
+	for i, p := range cfg.Peers {
+		if p.Name == peerName {
+			targetPeer = &cfg.Peers[i]
+			break
+		}
+	}
+
+	if targetPeer == nil {
+		http.Error(w, "peer not found", http.StatusNotFound)
+		return
+	}
+
+	user := targetPeer.SSHUser
+	if user == "" {
+		user = cfg.VPS.SSHUser
+	}
+	if user == "" {
+		user = "root"
+	}
+
+	// Upgrade to WebSocket
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+	defer ws.Close()
+
+	// SSH Client Config
+	sshConfig := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	// Try using SSH key
+	if cfg.VPS.SSHKey != "" {
+		key, err := os.ReadFile(cfg.VPS.SSHKey)
+		if err == nil {
+			signer, err := ssh.ParsePrivateKey(key)
+			if err == nil {
+				sshConfig.Auth = append(sshConfig.Auth, ssh.PublicKeys(signer))
+			}
+		}
+	}
+
+	// Connect to Peer via WG IP
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:22", targetPeer.WGIp), sshConfig)
+	if err != nil {
+		ws.WriteMessage(websocket.TextMessage, []byte("\r\nConnection failed: "+err.Error()+"\r\n"))
+		return
+	}
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		return
+	}
+	defer session.Close()
+
+	// Request PTY
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          1,
+		ssh.TTY_OP_ISPEED: 14400,
+		ssh.TTY_OP_OSPEED: 14400,
+	}
+	if err := session.RequestPty("xterm-256color", 40, 80, modes); err != nil {
+		return
+	}
+
+	sshIn, _ := session.StdinPipe()
+	sshOut, _ := session.StdoutPipe()
+
+	go func() {
+		io.Copy(sshIn, &wsWrapper{ws})
+	}()
+
+	go func() {
+		io.Copy(&wsWrapper{ws}, sshOut)
+	}()
+
+	if err := session.Shell(); err != nil {
+		return
+	}
+
+	session.Wait()
+}
+
+type wsWrapper struct {
+	*websocket.Conn
+}
+
+func (w *wsWrapper) Write(p []byte) (n int, err error) {
+	err = w.WriteMessage(websocket.BinaryMessage, p)
+	return len(p), err
+}
+
+func (w *wsWrapper) Read(p []byte) (n int, err error) {
+	_, msg, err := w.ReadMessage()
+	if err != nil {
+		return 0, err
+	}
+	copy(p, msg)
+	return len(msg), nil
 }
