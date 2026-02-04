@@ -18,10 +18,8 @@ Examples:
   wg-gateway config proxy.email admin@domain.com
   wg-gateway config project my-gateway
   wg-gateway config monitor.interval 10
-  wg-gateway config monitor.discord.url https://discord.com/api/webhooks/...
-  wg-gateway config monitor.discord.enabled true
-  wg-gateway config backup.local_path ./backups
-  wg-gateway config backup.s3.bucket my-backups`,
+  wg-gateway config peer.home.ssh_user ubuntu
+  wg-gateway config monitor.discord.url https://discord.com/api/webhooks/...`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		key := args[0]
@@ -106,6 +104,21 @@ Examples:
 				case "bucket": cfg.Backup.S3.Bucket = value
 				case "access_key": cfg.Backup.S3.AccessKey = value
 				case "secret_key": cfg.Backup.S3.SecretKey = value
+				}
+			}
+		case "peer":
+			if len(parts) < 3 {
+				fmt.Println("Invalid key. Use peer.[name].ssh_user")
+				return
+			}
+			peerName := parts[1]
+			fieldName := parts[2]
+			for i, p := range cfg.Peers {
+				if p.Name == peerName {
+					if fieldName == "ssh_user" {
+						cfg.Peers[i].SSHUser = value
+					}
+					break
 				}
 			}
 		case "project":

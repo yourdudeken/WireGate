@@ -153,10 +153,12 @@ Username: `admin` | Default Port: `8080`
 | `check` | Live connectivity audit (Ping peers, check ports) |
 | `logs` | Stream logs from VPS or any Home peer |
 
-### Services & Peers
+### Node & Service Management
 | Command | Description |
 |---------|-------------|
-| `peer add` | Register a new home server node |
+| `peer add` | Register a new home server node (supports `--ssh-user`) |
+| `peer list` | View all configured nodes and their tunnel IPs |
+| `ssh [peer]` | Securely jump into a peer node from the VPS |
 | `service add` | Map a domain to a local port (Supports sslip.io) |
 | `service add-template`| Add a service with pre-configured app defaults |
 | `rotate-keys` | Regenerate all WireGuard keypairs for the project |

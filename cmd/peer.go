@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	peerWGIp string
+	peerWGIp    string
+	peerSSHUser string
 )
 
 var peerCmd = &cobra.Command{
@@ -68,6 +69,7 @@ var addPeerCmd = &cobra.Command{
 		cfg.Peers = append(cfg.Peers, config.PeerConfig{
 			Name:       name,
 			WGIp:       peerWGIp,
+			SSHUser:    peerSSHUser,
 			Keepalive:  25,
 			PrivateKey: keys.Private,
 			PublicKey:  keys.Public,
@@ -102,6 +104,7 @@ var listPeerCmd = &cobra.Command{
 
 func init() {
 	addPeerCmd.Flags().StringVar(&peerWGIp, "ip", "", "WireGuard internal IP (optional)")
+	addPeerCmd.Flags().StringVar(&peerSSHUser, "ssh-user", "root", "Default SSH user for this peer")
 	peerCmd.AddCommand(addPeerCmd)
 	peerCmd.AddCommand(listPeerCmd)
 	rootCmd.AddCommand(peerCmd)

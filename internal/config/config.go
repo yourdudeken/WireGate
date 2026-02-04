@@ -50,6 +50,7 @@ type VPSConfig struct {
 type PeerConfig struct {
 	Name       string `yaml:"name"`
 	WGIp       string `yaml:"wg_ip"`
+	SSHUser    string `yaml:"ssh_user"`
 	Keepalive  int    `yaml:"keepalive"`
 	PrivateKey string `yaml:"private_key"`
 	PublicKey  string `yaml:"public_key"`
