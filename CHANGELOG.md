@@ -2,6 +2,11 @@
 
 All notable changes to the `wg-gateway` project will be documented in this file.
 
+## [2.2.2] - 2026-02-04
+### Added
+- **Peer SSH Tunneling**: New `ssh [peer]` command allows users to jump directly from the VPS hub into any home server node via the encrypted WireGuard network.
+- **SSH User Orchestration**: Added `--ssh-user` support to peer management for automated login.
+
 ## [2.2.1] - 2026-01-31
 ### Fixed
 - **CI/CD Permissions**: Fixed missing `contents: write` permissions in Release workflow preventing automatic tagging.

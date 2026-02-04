@@ -41,6 +41,7 @@ func NewDefaultConfig() *Config {
 			{
 				Name:      "home",
 				WGIp:      "10.0.0.2",
+				SSHUser:   "root",
 				Keepalive: 25,
 			},
 		},
