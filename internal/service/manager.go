@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"github.com/yourdudeken/wg-gateway/internal/config"
+	"github.com/yourdudeken/wiregate/internal/config"
 )
 
 func Add(cfg *config.Config, name, domain string, port int, peerName string) error {

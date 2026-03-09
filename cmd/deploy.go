@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/provision"
-	"github.com/yourdudeken/wg-gateway/internal/ssh"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/provision"
+	"github.com/yourdudeken/wiregate/internal/ssh"
 )
 
 var bootstrapFlag bool
@@ -22,7 +22,7 @@ var deployCmd = &cobra.Command{
 		}
 
 		if cfg.VPS.IP == "" {
-			fmt.Println("Error: VPS IP is not set. Use 'wg-gateway config vps.ip <ip>' first.")
+			fmt.Println("Error: VPS IP is not set. Use 'wiregate config vps.ip <ip>' first.")
 			return
 		}
 
@@ -44,21 +44,21 @@ var deployCmd = &cobra.Command{
 		fmt.Printf("Deploying to VPS (%s)...\n", cfg.VPS.IP)
 		
 		// Create directory on VPS
-		if err := client.Run("mkdir -p ~/wg-gateway/traefik_dynamic ~/wg-gateway/wireguard ~/wg-gateway/letsencrypt"); err != nil {
+		if err := client.Run("mkdir -p ~/wiregate/traefik_dynamic ~/wiregate/wireguard ~/wiregate/letsencrypt"); err != nil {
 			fmt.Printf("Error creating directory on VPS: %v\n", err)
 			return
 		}
 
 		// Upload files
 		fmt.Println("Uploading configurations...")
-		if err := client.Copy("deploy/vps/.", "~/wg-gateway"); err != nil {
+		if err := client.Copy("deploy/vps/.", "~/wiregate"); err != nil {
 			fmt.Printf("Error uploading files: %v\n", err)
 			return
 		}
 
 		// Start services
 		fmt.Println("Starting services on VPS...")
-		if err := client.Run("cd ~/wg-gateway && docker compose up -d || docker-compose up -d"); err != nil {
+		if err := client.Run("cd ~/wiregate && docker compose up -d || docker-compose up -d"); err != nil {
 			fmt.Printf("Error starting services: %v\n", err)
 			return
 		}

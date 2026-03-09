@@ -42,7 +42,7 @@ var listHubsCmd = &cobra.Command{
 		}
 
 		fmt.Println("\nTo use a specific hub, use the -c flag:")
-		fmt.Println("  wg-gateway -c <filename>.yaml [command]")
+		fmt.Println("  wiregate -c <filename>.yaml [command]")
 	},
 }
 

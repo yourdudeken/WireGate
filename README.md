@@ -1,4 +1,4 @@
-# W-G Gateway
+# WireGate
 
 ```
  __      __  ________        ________         __                                           
@@ -11,7 +11,7 @@
 
 **WireGuard VPS-to-Home Gateway Tool**
 
-`wg-gateway` is a production-grade infrastructure tool designed to securely expose home servers (behind CGNAT, 4G, or dynamic IPs) to the public internet. It automates the orchestration of WireGuard tunnels and Traefik reverse proxies using a strictly **command-driven workflow**.
+`wiregate` is a production-grade infrastructure tool designed to securely expose home servers (behind CGNAT, 4G, or dynamic IPs) to the public internet. It automates the orchestration of WireGuard tunnels and Traefik reverse proxies using a strictly **command-driven workflow**.
 
 ---
 
@@ -42,12 +42,12 @@
 ### The One-Liner (Recommended)
 This script detects your OS and architecture, downloads the latest release, and installs it to your path.
 ```bash
-curl -sSfL https://raw.githubusercontent.com/yourdudeken/wg-gateway/main/scripts/install.sh | sh
+curl -sSfL https://raw.githubusercontent.com/yourdudeken/wiregate/main/scripts/install.sh | sh
 ```
 
 ### Manual Installation (Go)
 ```bash
-go install github.com/yourdudeken/wg-gateway@latest
+go install github.com/yourdudeken/wiregate@latest
 ```
 
 ---
@@ -57,33 +57,33 @@ go install github.com/yourdudeken/wg-gateway@latest
 ### 1. Initialize & Setup
 Initialize your project and run the setup command to configure your local firewall (UFW) to allow tunnel traffic.
 ```bash
-wg-gateway init --ip 1.2.3.4 --user root --key ~/.ssh/id_ed25519 --email admin@example.com
-wg-gateway setup
+wiregate init --ip 1.2.3.4 --user root --key ~/.ssh/id_ed25519 --email admin@example.com
+wiregate setup
 ```
 
 ### 2. Add a Peer (Node)
 Add your home server node. providing a unique name.
 ```bash
-wg-gateway peer add warehouse-lab
+wiregate peer add warehouse-lab
 ```
 
 ### 3. Add Services
 Route domains to your peers. Use built-in templates for common apps.
 ```bash
-wg-gateway service add-template plex myplex
+wiregate service add-template plex myplex
 # Result: myplex.1.2.3.4.sslip.io -> Local Port 32400
 ```
 
 ### 4. Deploy to VPS
 Bootstrap the remote server and sync configurations.
 ```bash
-wg-gateway deploy --bootstrap
+wiregate deploy --bootstrap
 ```
 
 ### 5. Start the Tunnel
 Launch the secure tunnel on your local machine.
 ```bash
-wg-gateway up home
+wiregate up home
 ```
 
 ---
@@ -95,12 +95,12 @@ The tool can run in "Watcher" mode to monitor the health of your VPS, tunnels, a
 
 ```bash
 # Configure alerts
-wg-gateway config monitor.discord.url "https://discord.com/api/webhooks/..."
-wg-gateway config monitor.discord.enabled true
-wg-gateway config monitor.interval 10
+wiregate config monitor.discord.url "https://discord.com/api/webhooks/..."
+wiregate config monitor.discord.enabled true
+wiregate config monitor.interval 10
 
 # Start the monitor
-wg-gateway monitor
+wiregate monitor
 ```
 
 ### Automated Backups
@@ -108,10 +108,10 @@ Protect your configuration and SSL certificates from data loss.
 
 ```bash
 # Set backup location
-wg-gateway config backup.local_path ./backups
+wiregate config backup.local_path ./backups
 
 # Run backup
-wg-gateway backup
+wiregate backup
 ```
 *Note: This zips your local `config.yaml` and fetches the `letsencrypt/acme.json` file from your VPS.*
 
@@ -120,17 +120,17 @@ Manage multiple independent VPS gateways (e.g., US and Europe) using the `-c` fl
 
 ```bash
 # List all hub contexts
-wg-gateway hub list
+wiregate hub list
 
 # Switch context for a specific command
-wg-gateway -c europe.yaml status
+wiregate -c europe.yaml status
 ```
 
 ### Web UI Dashboard
 A modern, password-protected graphical interface for managing your gateway.
 
 ```bash
-wg-gateway web --password MySecurePass
+wiregate web --password MySecurePass
 ```
 Username: `admin` | Default Port: `8080`
 
@@ -167,7 +167,7 @@ Username: `admin` | Default Port: `8080`
 
 ## Security
 
-`wg-gateway` implements several hardening measures automatically:
+`wiregate` implements several hardening measures automatically:
 *   **Fail2Ban**: Installed and configured during bootstrap to block brute-force attacks.
 *   **UFW Firewall**: Defaults to "deny all" with explicit allows for SSH (22), WireGuard (51820), and Web (80/443).
 *   **Basic Auth**: The Web Dashboard is protected by Basic Authentication (Username: `admin`).

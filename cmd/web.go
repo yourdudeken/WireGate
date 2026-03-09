@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/web"
+	"github.com/yourdudeken/wiregate/internal/web"
 )
 
 var (
@@ -24,7 +24,7 @@ var webCmd = &cobra.Command{
 
 		server := web.NewServer(ConfigFile, webPassword)
 		
-		fmt.Printf("Starting W-G Gateway Web UI...\n")
+		fmt.Printf("Starting WireGate Web UI...\n")
 		fmt.Printf("Dashboard: http://localhost:%d\n", webPort)
 		if webPassword != "" {
 			fmt.Printf("Authentication: ENABLED (User: admin)\n")

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/wg"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/wg"
 )
 
 var rotateKeysCmd = &cobra.Command{

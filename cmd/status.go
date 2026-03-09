@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
+	"github.com/yourdudeken/wiregate/internal/config"
 )
 
 var statusCmd = &cobra.Command{
@@ -17,7 +17,7 @@ var statusCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println("W-G Gateway Status")
+		fmt.Println("WireGate Status")
 		fmt.Println("======================")
 		fmt.Printf("Project:    %s\n", cfg.Project)
 		fmt.Printf("VPS IP:     %s (User: %s)\n", cfg.VPS.IP, cfg.VPS.SSHUser)

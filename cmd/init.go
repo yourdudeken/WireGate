@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/wg"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/wg"
 )
 
 var (
@@ -65,7 +65,7 @@ var initCmd = &cobra.Command{
 
 		fmt.Printf("Project initialized successfully at %s\n", ConfigFile)
 		if cfg.VPS.IP == "" {
-			fmt.Printf("Note: You still need to set your VPS IP using 'wg-gateway -c %s config vps.ip <ip>'\n", ConfigFile)
+			fmt.Printf("Note: You still need to set your VPS IP using 'wiregate -c %s config vps.ip <ip>'\n", ConfigFile)
 		}
 	},
 }

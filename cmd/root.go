@@ -19,7 +19,7 @@ WireGuard VPS-to-Home Gateway Tool
 `
 
 var rootCmd = &cobra.Command{
-	Use:   "wg-gateway",
+	Use:   "wiregate",
 	Short: "WireGuard VPS-to-Home Gateway Tool",
 	Long: banner + `
 A tool that automates exposing a home server through a VPS with a public IP 

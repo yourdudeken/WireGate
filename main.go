@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/yourdudeken/wg-gateway/cmd"
+	"github.com/yourdudeken/wiregate/cmd"
 )
 
 func main() {

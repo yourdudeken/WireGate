@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/templates"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/templates"
 )
 
 var generateCmd = &cobra.Command{

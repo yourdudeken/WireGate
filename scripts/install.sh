@@ -1,10 +1,10 @@
 #!/bin/sh
 set -e
 
-# W-G Gateway Installer
-# This script installs the wg-gateway binary to /usr/local/bin
+# WireGate Installer
+# This script installs the wiregate binary to /usr/local/bin
 
-echo "W-G Gateway Installer"
+echo "WireGate Installer"
 echo "--------------------"
 
 # Detect OS
@@ -23,8 +23,8 @@ case "${ARCH}" in
     *)      echo "Error: Architecture ${ARCH} is not supported."; exit 1;;
 esac
 
-BINARY_NAME="wg-gateway"
-REPO="yourdudeken/wg-gateway"
+BINARY_NAME="wiregate"
+REPO="yourdudeken/wiregate"
 DOWNLOAD_URL="https://github.com/${REPO}/releases/latest/download/${BINARY_NAME}-${OS}-${ARCH}"
 
 # Create temporary directory
@@ -50,10 +50,10 @@ echo "Success! ${BINARY_NAME} has been installed to /usr/local/bin"
 echo ""
 
 # Run setup
-if command -v wg-gateway >/dev/null 2>&1; then
+if command -v wiregate >/dev/null 2>&1; then
     echo "Running local setup..."
-    wg-gateway setup
+    wiregate setup
 else
-    echo "Warning: wg-gateway was installed but is not in your PATH yet."
+    echo "Warning: wiregate was installed but is not in your PATH yet."
     echo "Please restart your terminal or run: export PATH=\$PATH:/usr/local/bin"
 fi

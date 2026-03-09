@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the `wg-gateway` project will be documented in this file.
+All notable changes to the `wiregate` project will be documented in this file.
 
 ## [2.2.2] - 2026-02-04
 ### Added
@@ -87,7 +87,7 @@ All notable changes to the `wg-gateway` project will be documented in this file.
 
 ## [1.0.0] - 2026-01-25
 ### Added
-- Initial release of the `wg-gateway` CLI
+- Initial release of the `wiregate` CLI
 - Basic WireGuard point-to-point tunnel orchestration
 - Support for Traefik reverse proxy with automated Let's Encrypt
 - Core commands: `init`, `generate`, `deploy`, `status`

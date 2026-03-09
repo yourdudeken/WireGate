@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/ssh"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/ssh"
 )
 
 type Hub struct {

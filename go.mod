@@ -1,4 +1,4 @@
-module github.com/yourdudeken/wg-gateway
+module github.com/yourdudeken/wiregate
 
 go 1.18
 

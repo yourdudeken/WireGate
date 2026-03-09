@@ -17,7 +17,7 @@ var setupCmd = &cobra.Command{
 - Verifying Docker installation
 - Providing system-wide installation instructions`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("W-G Gateway Local Setup")
+		fmt.Println("WireGate Local Setup")
 		fmt.Println("------------------------")
 
 		if runtime.GOOS != "linux" {
@@ -48,11 +48,11 @@ var setupCmd = &cobra.Command{
 		}
 
 		fmt.Println("\nSystem Installation:")
-		fmt.Println("To run 'wg-gateway' from anywhere, run:")
+		fmt.Println("To run 'wiregate' from anywhere, run:")
 		cwd, _ := os.Getwd()
-		fmt.Printf("sudo ln -sf %s/wg-gateway /usr/local/bin/wg-gateway\n", cwd)
+		fmt.Printf("sudo ln -sf %s/wiregate /usr/local/bin/wiregate\n", cwd)
 		
-		fmt.Println("\nSetup complete. You can now use './wg-gateway up [peer]' to start your tunnels.")
+		fmt.Println("\nSetup complete. You can now use './wiregate up [peer]' to start your tunnels.")
 	},
 }
 

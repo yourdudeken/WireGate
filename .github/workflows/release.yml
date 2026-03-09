@@ -58,20 +58,20 @@ jobs:
       - name: Build Binaries
         run: |
           mkdir -p dist
-          GOOS=linux GOARCH=amd64 go build -o dist/wg-gateway-linux-amd64 main.go
-          GOOS=linux GOARCH=arm64 go build -o dist/wg-gateway-linux-arm64 main.go
-          GOOS=darwin GOARCH=amd64 go build -o dist/wg-gateway-darwin-amd64 main.go
-          GOOS=darwin GOARCH=arm64 go build -o dist/wg-gateway-darwin-arm64 main.go
+          GOOS=linux GOARCH=amd64 go build -o dist/wiregate-linux-amd64 main.go
+          GOOS=linux GOARCH=arm64 go build -o dist/wiregate-linux-arm64 main.go
+          GOOS=darwin GOARCH=amd64 go build -o dist/wiregate-darwin-amd64 main.go
+          GOOS=darwin GOARCH=arm64 go build -o dist/wiregate-darwin-arm64 main.go
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.auto-tag.outputs.new_tag }}
           files: |
-            dist/wg-gateway-linux-amd64
-            dist/wg-gateway-linux-arm64
-            dist/wg-gateway-darwin-amd64
-            dist/wg-gateway-darwin-arm64
+            dist/wiregate-linux-amd64
+            dist/wiregate-linux-arm64
+            dist/wiregate-darwin-amd64
+            dist/wiregate-darwin-arm64
           draft: false
           prerelease: false
           generate_release_notes: true

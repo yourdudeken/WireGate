@@ -25,7 +25,7 @@ func SendDiscord(webhookURL string, alert Alert) error {
 	payload := map[string]interface{}{
 		"embeds": []map[string]interface{}{
 			{
-				"title":       fmt.Sprintf("[%s] W-G Gateway Alert", alert.Level),
+				"title":       fmt.Sprintf("[%s] WireGate Alert", alert.Level),
 				"description": alert.Message,
 				"color":       color,
 				"timestamp":   alert.Time.Format(time.RFC3339),
@@ -52,7 +52,7 @@ func SendDiscord(webhookURL string, alert Alert) error {
 }
 
 func SendTelegram(token, chatID string, alert Alert) error {
-	message := fmt.Sprintf("[%s] W-G Gateway Alert\n\n%s\n\nTime: %s", 
+	message := fmt.Sprintf("[%s] WireGate Alert\n\n%s\n\nTime: %s", 
 		alert.Level, alert.Message, alert.Time.Format("2006-01-02 15:04:05"))
 
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)

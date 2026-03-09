@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/backup"
-	"github.com/yourdudeken/wg-gateway/internal/config"
+	"github.com/yourdudeken/wiregate/internal/backup"
+	"github.com/yourdudeken/wiregate/internal/config"
 )
 
 var backupCmd = &cobra.Command{
@@ -20,7 +20,7 @@ var backupCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println("W-G Gateway Backup System")
+		fmt.Println("WireGate Backup System")
 		fmt.Println("-------------------------")
 
 		archivePath, err := backup.Run(cfg)

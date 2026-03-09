@@ -7,9 +7,9 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/service"
-	"github.com/yourdudeken/wg-gateway/internal/wg"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/service"
+	"github.com/yourdudeken/wiregate/internal/wg"
 )
 
 //go:embed templates/* static/*
@@ -36,7 +36,7 @@ func (s *Server) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		user, pass, ok := r.BasicAuth()
 		if !ok || user != "admin" || pass != s.password {
-			w.Header().Set("WWW-Authenticate", `Basic realm="W-G Gateway Dashboard"`)
+			w.Header().Set("WWW-Authenticate", `Basic realm="WireGate Dashboard"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

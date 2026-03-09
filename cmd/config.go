@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
+	"github.com/yourdudeken/wiregate/internal/config"
 )
 
 var configCmd = &cobra.Command{
@@ -13,13 +13,13 @@ var configCmd = &cobra.Command{
 	Short: "Update configuration values without editing files",
 	Long: `Update configuration values using dot notation.
 Examples:
-  wg-gateway config vps.ip 1.2.3.4
-  wg-gateway config vps.user root
-  wg-gateway config proxy.email admin@domain.com
-  wg-gateway config project my-gateway
-  wg-gateway config monitor.interval 10
-  wg-gateway config peer.home.ssh_user ubuntu
-  wg-gateway config monitor.discord.url https://discord.com/api/webhooks/...`,
+  wiregate config vps.ip 1.2.3.4
+  wiregate config vps.user root
+  wiregate config proxy.email admin@domain.com
+  wiregate config project my-gateway
+  wiregate config monitor.interval 10
+  wiregate config peer.home.ssh_user ubuntu
+  wiregate config monitor.discord.url https://discord.com/api/webhooks/...`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		key := args[0]

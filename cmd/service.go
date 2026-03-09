@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/service"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/service"
 )
 
 var (
@@ -141,7 +141,7 @@ var addTemplateCmd = &cobra.Command{
 	Use:   "add-template [template-name] [domain-prefix]",
 	Short: "Add a new service using a pre-configured template",
 	Long: `Available templates: plex, ha, jellyfin, pihole, grafana, prometheus, overseerr, tautulli.
-Example: wg-gateway service add-template plex myplex`,
+Example: wiregate service add-template plex myplex`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		tmplName := strings.ToLower(args[0])

@@ -1,6 +1,6 @@
-# Contributing to wg-gateway
+# Contributing to wiregate
 
-First off, thank you for considering contributing to `wg-gateway`! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
+First off, thank you for considering contributing to `wiregate`! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
 
 ## Code of Conduct
 
@@ -32,7 +32,7 @@ By participating in this project, you agree to abide by our Code of Conduct. (Po
 
 ### Building
 ```bash
-go build -o wg-gateway main.go
+go build -o wiregate main.go
 ```
 
 ### Running Tests

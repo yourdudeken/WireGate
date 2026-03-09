@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/ssh"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/ssh"
 )
 
 func Run(cfg *config.Config) (string, error) {
 	// 1. Create temporary directory for gathering files
-	tmpDir, err := os.MkdirTemp("", "wg-gateway-backup-*")
+	tmpDir, err := os.MkdirTemp("", "wiregate-backup-*")
 	if err != nil {
 		return "", err
 	}
@@ -39,7 +39,7 @@ func Run(cfg *config.Config) (string, error) {
 
 	// 4. Create ZIP archive
 	timestamp := time.Now().Format("20060102-150405")
-	archiveName := fmt.Sprintf("wg-gateway-backup-%s.zip", timestamp)
+	archiveName := fmt.Sprintf("wiregate-backup-%s.zip", timestamp)
 	archivePath := filepath.Join(os.TempDir(), archiveName)
 
 	if err := zipSource(tmpDir, archivePath); err != nil {

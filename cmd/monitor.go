@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
-	"github.com/yourdudeken/wg-gateway/internal/monitor"
+	"github.com/yourdudeken/wiregate/internal/config"
+	"github.com/yourdudeken/wiregate/internal/monitor"
 )
 
 var monitorCmd = &cobra.Command{
@@ -29,7 +29,7 @@ And sends alerts via Discord or Telegram if anomalies are detected.`,
 		}
 
 		hub := monitor.NewHub(cfg)
-		fmt.Println("W-G Gateway Monitor Service")
+		fmt.Println("WireGate Monitor Service")
 		fmt.Println("---------------------------")
 		hub.Start()
 	},

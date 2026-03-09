@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
+	"github.com/yourdudeken/wiregate/internal/config"
 )
 
 var upCmd = &cobra.Command{

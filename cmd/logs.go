@@ -6,7 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/spf13/cobra"
-	"github.com/yourdudeken/wg-gateway/internal/config"
+	"github.com/yourdudeken/wiregate/internal/config"
 )
 
 var followFlag bool
@@ -39,7 +39,7 @@ var logsCmd = &cobra.Command{
 func viewVPSLogs(cfg *config.Config, service string) {
 	dest := fmt.Sprintf("%s@%s", cfg.VPS.SSHUser, cfg.VPS.IP)
 	
-	remoteCmd := "cd ~/wg-gateway && docker compose logs"
+	remoteCmd := "cd ~/wiregate && docker compose logs"
 	if followFlag {
 		remoteCmd += " -f"
 	}
